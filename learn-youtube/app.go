@@ -52,36 +52,111 @@ import "fmt"
 // 	}
 // }
 
-func main() {
-	var start, end int
+// func main() {
+// 	var start, end int
 
-	// Nhập số bắt đầu và kết thúc
-	fmt.Print("Nhập số bắt đầu (1-10): ")
-	_, err1 := fmt.Scan(&start)
-	fmt.Print("Nhập số kết thúc (1-10): ")
-	_, err2 := fmt.Scan(&end)
+// 	// Nhập số bắt đầu và kết thúc
+// 	fmt.Print("Nhập số bắt đầu (1-10): ")
+// 	_, err1 := fmt.Scan(&start)
+// 	fmt.Print("Nhập số kết thúc (1-10): ")
+// 	_, err2 := fmt.Scan(&end)
 
-	// Kiểm tra điều kiện input
-	if err1 != nil || err2 != nil {
-		fmt.Println("Lỗi: Vui lòng chỉ nhập số nguyên!")
+// 	// Kiểm tra điều kiện input
+// 	if err1 != nil || err2 != nil {
+// 		fmt.Println("Lỗi: Vui lòng chỉ nhập số nguyên!")
+// 		return
+// 	}
+
+// 	if start < 1 || end > 10 || start > end {
+// 		fmt.Println("Lỗi: Giá trị không hợp lệ! Yêu cầu: 1 <= số bắt đầu <= số kết thúc <= 10.")
+// 		return
+// 	}
+
+// 	fmt.Println("\n==============================")
+// 	fmt.Println("     BẢNG CỬU CHƯƠNG ĐÃ TẠO     ")
+// 	fmt.Println("==============================\n")
+
+// 	// Vòng lặp hiển thị bảng cửu chương từ start đến end
+// 	for i := start; i <= end; i++ {
+// 		fmt.Printf("--- BẢNG CỬU CHƯƠNG %d ---\n", i)
+// 		for j := 1; j <= 10; j++ {
+// 			fmt.Printf("%d x %2d = %2d\n", i, j, i*j)
+// 		}
+// 		fmt.Println() // Dòng trống giữa các bảng
+// 	}
+// }
+
+// Hàm tính tổng đệ quy (Bài 1)
+func sumRecursive(n int) int {
+	if n <= 1 {
+		return 1
+	}
+	return n + sumRecursive(n-1)
+}
+
+// Hàm xử lý Bài 1
+func runBai01() {
+	var n int
+	fmt.Print("\n--- BÀI 01: TÍNH TỔNG ĐỆ QUY 1 -> N ---\n")
+	fmt.Print("Nhập N: ")
+	fmt.Scan(&n)
+	if n < 1 {
+		fmt.Println("N phải >= 1")
+		return
+	}
+	fmt.Printf("Kết quả tổng từ 1 đến %d là: %d\n", n, sumRecursive(n))
+}
+
+// Hàm Fibonacci (Bài 2)
+func runBai02() {
+	var n int
+	fmt.Print("\n--- BÀI 02: DÃY SỐ FIBONACCI ---\n")
+	fmt.Print("Nhập số lượng phần tử Fibonacci: ")
+	fmt.Scan(&n)
+	if n <= 0 {
+		fmt.Println("Số lượng phải > 0")
 		return
 	}
 
-	if start < 1 || end > 10 || start > end {
-		fmt.Println("Lỗi: Giá trị không hợp lệ! Yêu cầu: 1 <= số bắt đầu <= số kết thúc <= 10.")
-		return
-	}
-
-	fmt.Println("\n==============================")
-	fmt.Println("     BẢNG CỬU CHƯƠNG ĐÃ TẠO     ")
-	fmt.Println("==============================\n")
-
-	// Vòng lặp hiển thị bảng cửu chương từ start đến end
-	for i := start; i <= end; i++ {
-		fmt.Printf("--- BẢNG CỬU CHƯƠNG %d ---\n", i)
-		for j := 1; j <= 10; j++ {
-			fmt.Printf("%d x %2d = %2d\n", i, j, i*j)
+	fib := make([]int, n)
+	sum := 0
+	for i := 0; i < n; i++ {
+		if i == 0 {
+			fib[i] = 0
+		} else if i == 1 {
+			fib[i] = 1
+		} else {
+			fib[i] = fib[i-1] + fib[i-2]
 		}
-		fmt.Println() // Dòng trống giữa các bảng
+		sum += fib[i]
+	}
+
+	fmt.Printf("Dãy Fibonacci: %v\n", fib)
+	fmt.Printf("Tổng dãy Fibonacci: %d\n", sum)
+}
+
+// Hàm main chứa Menu (Bài 3)[cite: 1]
+func main() {
+	var choice int
+	for {
+		fmt.Println("\n================ MENU BÀI TẬP ================")
+		fmt.Println("1. Bài 01: Tính tổng đệ quy từ 1 đến N")
+		fmt.Println("2. Bài 02: Hiển thị và tính tổng dãy Fibonacci")
+		fmt.Println("0. Thoát chương trình")
+		fmt.Println("==============================================")
+		fmt.Print("Mời bạn chọn chức năng (0-2): ")
+		fmt.Scan(&choice)
+
+		switch choice {
+		case 1:
+			runBai01()
+		case 2:
+			runBai02()
+		case 0:
+			fmt.Println("Cảm ơn bạn đã sử dụng chương trình!")
+			return
+		default:
+			fmt.Println("Lựa chọn không hợp lệ. Vui lòng chọn lại từ 0 đến 2!")
+		}
 	}
 }
