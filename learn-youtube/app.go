@@ -108,55 +108,67 @@ func runBai01() {
 }
 
 // Hàm Fibonacci (Bài 2)
-func runBai02() {
-	var n int
-	fmt.Print("\n--- BÀI 02: DÃY SỐ FIBONACCI ---\n")
-	fmt.Print("Nhập số lượng phần tử Fibonacci: ")
-	fmt.Scan(&n)
-	if n <= 0 {
-		fmt.Println("Số lượng phải > 0")
-		return
-	}
+// func runBai02() {
+// 	var n int
+// 	fmt.Print("\n--- BÀI 02: DÃY SỐ FIBONACCI ---\n")
+// 	fmt.Print("Nhập số lượng phần tử Fibonacci: ")
+// 	fmt.Scan(&n)
+// 	if n <= 0 {
+// 		fmt.Println("Số lượng phải > 0")
+// 		return
+// 	}
 
-	fib := make([]int, n)
-	sum := 0
-	for i := 0; i < n; i++ {
-		if i == 0 {
-			fib[i] = 0
-		} else if i == 1 {
-			fib[i] = 1
-		} else {
-			fib[i] = fib[i-1] + fib[i-2]
-		}
-		sum += fib[i]
-	}
+// 	fib := make([]int, n)
+// 	sum := 0
+// 	for i := 0; i < n; i++ {
+// 		if i == 0 {
+// 			fib[i] = 0
+// 		} else if i == 1 {
+// 			fib[i] = 1
+// 		} else {
+// 			fib[i] = fib[i-1] + fib[i-2]
+// 		}
+// 		sum += fib[i]
+// 	}
 
-	fmt.Printf("Dãy Fibonacci: %v\n", fib)
-	fmt.Printf("Tổng dãy Fibonacci: %d\n", sum)
-}
+// 	fmt.Printf("Dãy Fibonacci: %v\n", fib)
+// 	fmt.Printf("Tổng dãy Fibonacci: %d\n", sum)
+// }
 
 // Hàm main chứa Menu (Bài 3)[cite: 1]
-func main() {
-	var choice int
-	for {
-		fmt.Println("\n================ MENU BÀI TẬP ================")
-		fmt.Println("1. Bài 01: Tính tổng đệ quy từ 1 đến N")
-		fmt.Println("2. Bài 02: Hiển thị và tính tổng dãy Fibonacci")
-		fmt.Println("0. Thoát chương trình")
-		fmt.Println("==============================================")
-		fmt.Print("Mời bạn chọn chức năng (0-2): ")
-		fmt.Scan(&choice)
+// func main() {
+// 	var choice int
+// 	for {
+// 		fmt.Println("\n================ MENU BÀI TẬP ================")
+// 		fmt.Println("1. Bài 01: Tính tổng đệ quy từ 1 đến N")
+// 		fmt.Println("2. Bài 02: Hiển thị và tính tổng dãy Fibonacci")
+// 		fmt.Println("0. Thoát chương trình")
+// 		fmt.Println("==============================================")
+// 		fmt.Print("Mời bạn chọn chức năng (0-2): ")
+// 		fmt.Scan(&choice)
 
-		switch choice {
-		case 1:
-			runBai01()
-		case 2:
-			runBai02()
-		case 0:
-			fmt.Println("Cảm ơn bạn đã sử dụng chương trình!")
-			return
-		default:
-			fmt.Println("Lựa chọn không hợp lệ. Vui lòng chọn lại từ 0 đến 2!")
-		}
-	}
+// 		switch choice {
+// 		case 1:
+// 			runBai01()
+// 		case 2:
+// 			runBai02()
+// 		case 0:
+// 			fmt.Println("Cảm ơn bạn đã sử dụng chương trình!")
+// 			return
+// 		default:
+// 			fmt.Println("Lựa chọn không hợp lệ. Vui lòng chọn lại từ 0 đến 2!")
+// 		}
+// 	}
+// }
+
+func main() {
+	fmt.Println("Hello World!")
+
+	name := "Nguyen Van A"
+	fmt.Println("My name is", name)
+	fmt.Printf("My name is %s\n", name)
+	// address pointer
+	var address *string = &name
+	fmt.Println("Address of name:", address)
+	fmt.Println("Value at address:", *address)
 }
