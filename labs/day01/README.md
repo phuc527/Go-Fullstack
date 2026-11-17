@@ -28,14 +28,15 @@
 
 ### 1. Khởi tạo module
 
+Toàn bộ `labs/` dùng **1 module** ở root repo (mỗi `labs/dayXX` là 1 package). Mỗi project trong `projects/` sẽ là module riêng.
+
 ```bash
-cd labs/day01
-go mod init github.com/<username>/go-fullstack/labs/day01
-cd ../..
-go work use ./labs/day01   # để VS Code/gopls nhận module này
+# chạy ở root repo Go-Fullstack/
+go mod init github.com/phuc527/Go-Fullstack
+go work use .     # để VS Code/gopls nhận module này
 ```
 
-Mở `go.mod` và `go.work` xem chúng chứa gì.
+Mở `go.mod` và `go.work` xem chúng chứa gì. Chạy lab: `go run ./labs/day01 Phuc` (từ root) hoặc `go run . Phuc` (trong `labs/day01`).
 
 ### 2. CLI `hello`
 
