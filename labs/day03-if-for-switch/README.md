@@ -66,7 +66,7 @@ for i := range 5 {
 
 ## 4. Bài tập (30')
 
-Làm trong [main.go](main.go), rồi chạy `go run ./labs/day03`.
+Làm trong [main.go](main.go), rồi chạy `go run ./labs/day03-if-for-switch`.
 
 **Bài 1 (switch)** — `hang := "VIP"`. Dùng `switch` tìm giá:
 VIP = 1000000, Thường = 500000, Sinh viên = 300000, hạng khác thì in `Hạng không hợp lệ`.

@@ -31,9 +31,9 @@ Giống `readline` / `prompt()` bên JS, nhưng có 2 thứ lạ:
 
 ## Bài tập
 
-Viết trong [main.go](main.go). Các hàm `giaVe`, `tinhTien`, `kiemTraSoVe` thì **copy từ [Day 4](../day04/main.go)** sang.
+Viết trong [main.go](main.go). Các hàm `giaVe`, `tinhTien`, `kiemTraSoVe` thì **copy từ [Day 4](../day04-functions/main.go)** sang.
 
-Chạy: `go run ./labs/day05`, rồi gõ số trên terminal và Enter.
+Chạy: `go run ./labs/day05-review-ticket-machine`, rồi gõ số trên terminal và Enter.
 
 **Bước 1 — Menu.** Viết hàm `tenHang(luaChon int) string`: 1 → `"VIP"`, 2 → `"Thường"`, 3 → `"Sinh viên"`, số khác → `""`.
 Dùng vòng `for` từ 1 đến 3 để in menu kèm giá.

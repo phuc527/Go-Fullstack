@@ -65,7 +65,7 @@ ma := fmt.Sprintf("B%d", 3)   // "B3"   ←  JS: `B${3}`
 
 ## 5. Bài tập (30')
 
-Làm trong [main.go](main.go), rồi chạy `go run ./labs/day06`.
+Làm trong [main.go](main.go), rồi chạy `go run ./labs/day06-slices`.
 
 **Bài 1** — Tạo `gheVIP` gồm `"A1", "A2", "A3"`. In ra slice, số ghế, ghế đầu và ghế cuối.
 

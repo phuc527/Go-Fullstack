@@ -24,21 +24,21 @@ func main() {         // hàm main tự chạy khi chạy chương trình
 | ------------------------------ | ---------------------------------------------- |
 | `console.log("hi")`            | `fmt.Println("hi")`                            |
 | ``console.log(`Giá: ${gia}`)`` | `fmt.Printf("Giá: %d\n", gia)`                 |
-| `node index.js`                | `go run ./labs/day01`                          |
+| `node index.js`                | `go run ./labs/day01-hello`                    |
 | Không cần hàm main             | **Bắt buộc** có `package main` + `func main()` |
 | Dấu `;` tùy ý                  | Không cần `;`                                  |
 
 **Chạy thử** (ở thư mục gốc repo):
 
 ```bash
-go run ./labs/day01
+go run ./labs/day01-hello
 ```
 
 Thấy `🎫 Chào mừng đến Seatly!` là thành công.
 
 ## 3. Bài tập (20')
 
-Làm trong [main.go](main.go), chỗ có `TODO`. Sau mỗi bài chạy lại `go run ./labs/day01`.
+Làm trong [main.go](main.go), chỗ có `TODO`. Sau mỗi bài chạy lại `go run ./labs/day01-hello`.
 
 **Bài 2** — In thêm 1 dòng: `Sự kiện: Đêm nhạc Mùa Thu`
 

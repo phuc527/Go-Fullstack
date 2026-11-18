@@ -70,7 +70,7 @@ import (
 
 ## 5. Bài tập (25')
 
-Làm trong [main.go](main.go), rồi chạy `go run ./labs/day07`.
+Làm trong [main.go](main.go), rồi chạy `go run ./labs/day07-slicing`.
 
 **Bài 1** — `hangA` gồm A1 đến A6. In ra: cả hàng, VIP (3 ghế đầu), Thường (phần còn lại), ghế giữa (A3 A4).
 

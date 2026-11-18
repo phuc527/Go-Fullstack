@@ -51,7 +51,7 @@ tong, _ := tinhTien(4, "Thường")         // chỉ cần tổng → bỏ cái 
 
 ## 3. Bài tập (30')
 
-File [main.go](main.go) đã có sẵn **khung hàm**. Bạn thay phần `// TODO` + `return 0` bằng code thật. Chạy `go run ./labs/day04`.
+File [main.go](main.go) đã có sẵn **khung hàm**. Bạn thay phần `// TODO` + `return 0` bằng code thật. Chạy `go run ./labs/day04-functions`.
 
 **Bài 1** — Viết `giaVe(hang)`. Dùng lại `switch` của Day 3, nhưng mỗi case `return` luôn giá trị.
 

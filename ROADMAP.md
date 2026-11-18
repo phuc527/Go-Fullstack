@@ -15,10 +15,10 @@ Bài toán cốt lõi của đặt vé — **2 người không được đặt t
 ## Cách học
 
 - **1–1.5h/ngày, 5 ngày/tuần.** Mỗi ngày **1 khái niệm**, không hơn.
-- Mỗi ngày có thư mục `labs/dayXX/` gồm:
+- Mỗi ngày có thư mục `labs/dayXX-chu-de/` (ví dụ `labs/day08-maps/`) gồm:
   - `README.md`: giải thích ngắn + **so sánh với JS** + bài tập + **đáp án giấu sẵn** (bấm mở khi bí)
   - `main.go`: file khởi đầu, bạn điền code vào chỗ `TODO`
-- Chạy: `go run ./labs/day01` → so output với **"Kết quả mong đợi"** trong README. Khớp là xong.
+- Chạy: `go run ./labs/day01-hello` → so output với **"Kết quả mong đợi"** trong README. Khớp là xong.
 - **Ngày thứ 5 mỗi tuần = ôn tập**: 1 bài nhỏ gom kiến thức cả tuần. Không có kiến thức mới.
 - Bí quá 20 phút → mở đáp án, đọc hiểu, **xóa đi rồi tự gõ lại**. Không sao cả.
 - Viết test (`go test`) bắt đầu từ Tuần 4, khi đã quen cú pháp.

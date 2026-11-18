@@ -61,7 +61,7 @@ phi := float64(tamTinh) * 0.05 // ✅ đổi int → float64 trước
 
 ## 5. Bài tập (30')
 
-Làm trong [main.go](main.go), rồi chạy `go run ./labs/day02`.
+Làm trong [main.go](main.go), rồi chạy `go run ./labs/day02-variables`.
 
 **Bài 1** — Tạo 4 biến bằng `:=`: `tenSuKien`, `giaVe`, `soVe`, `conVe`. In mỗi biến kèm kiểu bằng `%v` và `%T`.
 

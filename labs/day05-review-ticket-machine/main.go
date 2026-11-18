@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 // Ôn tập Day 1–4: máy bán vé trên terminal.
-// Xem các bước trong README.md. Copy lại hàm cần dùng từ labs/day04/main.go.
+// Xem các bước trong README.md. Copy lại hàm cần dùng từ labs/day04-functions/main.go.
 
 func giaVe(hang string) int {
 	switch hang {
