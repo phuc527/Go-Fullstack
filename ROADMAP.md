@@ -1,195 +1,157 @@
-# Go Backend Roadmap — cho dev React/Node 5+ năm
+# Học Go Backend từ số 0 — cho dev React/Node
 
 > Tham chiếu [roadmap.sh/golang](https://roadmap.sh/golang) + [roadmap.sh/backend](https://roadmap.sh/backend).
-> Bỏ phần "lập trình là gì". Tập trung: **Go khác Node chỗ nào** + **bài toán BE thật** (race, transaction, cache, queue, observability).
+> Bạn đã biết lập trình (JS/Node) → chỉ cần học **cách viết lại những thứ bạn đã biết bằng Go**. Đi chậm, chắc.
+
+## Project xuyên suốt: Seatly — đặt vé sự kiện
+
+Mọi bài tập đều xoay quanh 1 domain: **sự kiện (event) → ghế (seat) → đặt vé (booking)**.
+
+- Tuần 1–4: bài tập nhỏ dùng dữ liệu vé/ghế để học cú pháp.
+- Tuần 5 trở đi: ghép lại thành **Seatly API** thật, lớn dần mỗi ngày.
+
+Bài toán cốt lõi của đặt vé — **2 người không được đặt trùng 1 ghế** — sẽ xuất hiện nhiều lần, mỗi lần ở mức khó hơn (bộ nhớ → mutex → database transaction).
 
 ## Cách học
 
-- **~2h/ngày, 5 ngày/tuần, 11 tuần (55 ngày).** 30' đọc → 90' lab.
-- **Mỗi lab có cột "Done khi"** — chưa đạt thì chưa qua ngày. Ưu tiên chứng minh bằng `go test`.
-- **Tuần 1–3:** drill ngôn ngữ trong `labs/dayXX/` (có test sẵn, bạn code cho xanh).
-- **Tuần 4–11:** build **Seatly** — API đặt vé sự kiện, lớn dần mỗi ngày trong `seatly/`.
-- Cuối tuần trả lời phần **Tự kiểm tra** (cũng là câu phỏng vấn Go hay gặp) không nhìn tài liệu.
-- Go 1.27 → dùng feature mới: `for i := range n`, ServeMux `GET /events/{id}`, `log/slog`, iterators, `wg.Go()`, `b.Loop()`, `testing/synctest`.
-
-```
-Go-Fullstack/
-├── go.mod          # 1 module cho cả repo
-├── labs/day01..15/ # drill ngôn ngữ
-└── seatly/         # project chính (từ Day 16)
-```
-
-## Node → Go
-
-| Node / TS                     | Go                                                 |
-| ----------------------------- | -------------------------------------------------- |
-| `package.json`, `npm i`       | `go.mod`, `go get`                                 |
-| class + extends               | struct + method + embedding (không kế thừa)        |
-| TS interface + `implements`   | interface ngầm định — chỉ cần đủ method            |
-| `try/catch/throw`             | trả `error`, `if err != nil`, `errors.Is/As`       |
-| `async/await`, event loop     | goroutine + channel, scheduler dùng hết CPU core   |
-| `Promise.all` / `AbortSignal` | `errgroup` / `context.Context`                     |
-| Express middleware            | `func(http.Handler) http.Handler`                  |
-| Jest                          | `testing` + table-driven, `-race`, fuzz, benchmark |
-| ESLint / Prettier             | `go vet`, `golangci-lint` / `gofmt` (không config) |
-| Prisma / TypeORM              | `sqlc` + `pgx` (hoặc GORM)                         |
-| zod                           | validate tay hoặc `go-playground/validator`        |
-| pino                          | `log/slog`                                         |
-| nodemon / pm2                 | `air` / không cần — 1 binary                       |
+- **1–1.5h/ngày, 5 ngày/tuần.** Mỗi ngày **1 khái niệm**, không hơn.
+- Mỗi ngày có thư mục `labs/dayXX/` gồm:
+  - `README.md`: giải thích ngắn + **so sánh với JS** + bài tập + **đáp án giấu sẵn** (bấm mở khi bí)
+  - `main.go`: file khởi đầu, bạn điền code vào chỗ `TODO`
+- Chạy: `go run ./labs/day01` → so output với **"Kết quả mong đợi"** trong README. Khớp là xong.
+- **Ngày thứ 5 mỗi tuần = ôn tập**: 1 bài nhỏ gom kiến thức cả tuần. Không có kiến thức mới.
+- Bí quá 20 phút → mở đáp án, đọc hiểu, **xóa đi rồi tự gõ lại**. Không sao cả.
+- Viết test (`go test`) bắt đầu từ Tuần 4, khi đã quen cú pháp.
 
 ---
 
-## Tuần 1 — Go cho người viết JS
+## Giai đoạn 1 — Làm quen Go (Tuần 1–4)
 
 _roadmap.sh: Learn the Basics_
 
-| Day | Chủ đề                                                                                          | Lab → **Done khi**                                                                                         |
-| --- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| 1   | Toolchain, module/package, kiểu cơ bản, `string`/`byte`/`rune`, slice, map                      | `Reverse` Unicode, `WordFreq`, `TopN` + CLI `topwords` → **test xanh, build được binary Linux từ Windows** |
-| 2   | Slice internals (`len`/`cap`, shared backing array), package `slices`/`maps`, struct, embedding | Tái hiện bug `append` aliasing rồi fix → **có test fail ở bản lỗi, pass ở bản fix**                        |
-| 3   | Function, closure, `defer`, pointer, value vs pointer receiver                                  | `Account.Deposit/Withdraw` → **test chứng minh value receiver không đổi state**                            |
-| 4   | Error: `%w`, `errors.Is/As`, sentinel, custom error type; `panic` chỉ cho bug                   | Parser file `.env` trả `*ParseError{Line}` → **test dùng `errors.As` lấy đúng số dòng**                    |
-| 5   | Package, visibility, `internal/`, layout `cmd/` + `internal/`, `golangci-lint`                  | CLI `envcheck --file .env` dùng parser Day 4 → **`go vet` + `golangci-lint run` sạch**                     |
+### Tuần 1 — Hello Go
 
-**Tự kiểm tra:** Khi nào `append` cấp mảng mới? Chọn value hay pointer receiver thế nào? Vì sao Go không có exception?
+| Day | Học gì                                                   | Bài tập                                          |
+| --- | -------------------------------------------------------- | ------------------------------------------------ |
+| 1   | Chạy chương trình đầu tiên, `fmt.Println`, `fmt.Printf`  | In thông tin 1 vé: tên sự kiện, ghế, giá         |
+| 2   | Biến (`:=`, `var`), kiểu `int`/`float64`/`string`/`bool` | Tính tổng tiền 3 vé + phí dịch vụ 5%             |
+| 3   | `if/else`, `for` (Go chỉ có `for`), `switch`             | Giá vé theo hạng (VIP/thường); in sơ đồ hàng ghế |
+| 4   | Hàm, trả **nhiều giá trị** cùng lúc                      | `tinhTien(soVe, hang)` trả `(tong, giamGia)`     |
+| 5   | **Ôn tập**                                               | Máy bán vé terminal: nhập số vé → in hóa đơn     |
 
-## Tuần 2 — Interface, Generics, Testing
+### Tuần 2 — Danh sách & từ điển
 
-_roadmap.sh: Going Deeper, Testing_
+| Day | Học gì                                                    | Bài tập                                          |
+| --- | --------------------------------------------------------- | ------------------------------------------------ |
+| 6   | Slice (giống array JS): tạo, `append`, `len`, `for range` | Danh sách ghế `["A1","A2",...]`, thêm/đếm ghế    |
+| 7   | Cắt slice `s[1:3]`, package `slices` (sort, contains)     | Kiểm tra ghế có tồn tại, sắp xếp ghế             |
+| 8   | Map (giống object/`Map` JS): thêm, đọc, xóa, kiểm tra key | `map[ghế]trạngThái`: đặt ghế, xem ghế còn trống  |
+| 9   | String: package `strings`                                 | Tách `"A12"` → hàng `A`, số `12`                 |
+| 10  | **Ôn tập**                                                | Sơ đồ phòng chiếu trên terminal, chọn ghế để đặt |
 
-| Day | Chủ đề                                                                                      | Lab → **Done khi**                                                                   |
-| --- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| 6   | Interface ngầm định, interface nhỏ, `io.Reader/Writer`, "accept interfaces, return structs" | `CountingWriter` bọc `io.Writer` → **`io.Copy` file qua nó, đếm đúng số byte**       |
-| 7   | Type switch, `any`, bẫy **typed nil ≠ nil interface**                                       | Tái hiện hàm trả `*MyErr(nil)` thành `error != nil` → **test bắt được bug, rồi fix** |
-| 8   | Generics: type params, constraints, `cmp.Ordered`, generic types                            | `Set[T]`, `Map/Filter`, `LRU[K,V]` → **coverage ≥ 90%**                              |
-| 9   | Testing sâu: subtests, `t.Helper`, `t.Cleanup`, golden file, fuzz, benchmark `b.Loop()`     | Fuzz `Reverse` Day 1; bench `+` vs `strings.Builder` → **có số `-benchmem` để so**   |
-| 10  | `encoding/json` (tags, `omitempty`, custom marshal), `time`, iterators `iter.Seq`           | Stream file JSON-lines 100MB → thống kê → **RAM không tăng theo kích thước file**    |
+### Tuần 3 — Struct, method, error
 
-**Tự kiểm tra:** Interface nhỏ có lợi gì? Vì sao `err != nil` dù trả `nil`? Generics vs interface khi nào dùng cái nào?
+| Day | Học gì                                                        | Bài tập                                             |
+| --- | ------------------------------------------------------------- | --------------------------------------------------- |
+| 11  | Struct (giống TS `type Event = {...}`)                        | Struct `Event`, `Seat`, in danh sách sự kiện        |
+| 12  | Method + pointer (quy tắc: muốn **sửa** dữ liệu thì dùng `*`) | `event.Book("A1")` đánh dấu ghế đã đặt              |
+| 13  | Error: `if err != nil` thay cho `try/catch`                   | `Book` báo lỗi: ghế không tồn tại / đã có người đặt |
+| 14  | Package & module: tách file, **chữ Hoa = export**             | Tách code ra package `booking`                      |
+| 15  | **Ôn tập**                                                    | CLI đặt vé: xem sự kiện → chọn ghế → đặt → hủy      |
 
-## Tuần 3 — Concurrency (điểm khác Node lớn nhất)
+### Tuần 4 — Interface, JSON, file, test
 
-_roadmap.sh: Goroutines, Channels, Select, Mutex, Context_
+| Day | Học gì                                                 | Bài tập                                         |
+| --- | ------------------------------------------------------ | ----------------------------------------------- |
+| 16  | Interface (giống TS interface, không cần `implements`) | `PriceRule` cho giá thường / giảm giá sinh viên |
+| 17  | JSON: struct ↔ JSON (như `JSON.stringify/parse`)       | In `Event` ra JSON                              |
+| 18  | Đọc/ghi file                                           | CLI đặt vé lưu vào `bookings.json`              |
+| 19  | Unit test đầu tiên với `go test` (như Jest)            | Test: đặt ghế trống ok, đặt ghế đã đặt → lỗi    |
+| 20  | **Ôn tập**                                             | CLI đặt vé hoàn chỉnh + test                    |
 
-| Day | Chủ đề                                                                           | Lab → **Done khi**                                                              |
-| --- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| 11  | Goroutine, channel buffered/unbuffered, `select`, close/range; so với event loop | Pipeline generate → square → sum → **kết quả đúng, không goroutine nào treo**   |
-| 12  | `sync.WaitGroup` (`wg.Go`), `Mutex/RWMutex`, `Once`, `atomic`, flag `-race`      | Counter bị race → **`go test -race` báo lỗi, fix bằng 2 cách đều pass**         |
-| 13  | `context` (cancel/timeout/value), `errgroup`                                     | Fetch N URL song song, timeout 2s → **1 URL lỗi thì hủy hết, trả lỗi đầu tiên** |
-| 14  | Worker pool, fan-in/out, semaphore, rate limit `x/time/rate`                     | Hash 1000 file với concurrency=4 → **benchmark nhanh hơn chạy tuần tự**         |
-| 15  | Goroutine leak, deadlock, `testing/synctest`                                     | Fix 3 bug leak cho sẵn → **test dùng `synctest` chứng minh hết leak**           |
+## Giai đoạn 2 — Seatly API (Tuần 5–6)
 
-**Tự kiểm tra:** Goroutine rẻ hơn thread vì sao? Khi nào dùng channel, khi nào dùng mutex? Ai nên cancel context?
+_roadmap.sh: Web Frameworks, APIs_ — Bê CLI lên thành REST API, giống làm với Express.
 
----
+### Tuần 5 — HTTP server
 
-## Tuần 4 — HTTP & REST API → bắt đầu Seatly
+| Day | Học gì                                         | Bài tập                                     |
+| --- | ---------------------------------------------- | ------------------------------------------- |
+| 21  | Server đầu tiên với `net/http` (như `app.get`) | `GET /health`                               |
+| 22  | Trả JSON                                       | `GET /events`                               |
+| 23  | Đọc body JSON                                  | `POST /events` tạo sự kiện                  |
+| 24  | Path param `/events/{id}`                      | `GET /events/{id}/seats` xem sơ đồ ghế      |
+| 25  | **Ôn tập**: status code, lỗi; Postman          | `POST /bookings` đặt ghế (lưu trong bộ nhớ) |
 
-_roadmap.sh: Web Frameworks, APIs (REST)_
+### Tuần 6 — Middleware & goroutine nhập môn
 
-Seatly: organizer tạo event có sơ đồ ghế, user giữ ghế 10 phút rồi thanh toán.
+| Day | Học gì                                        | Bài tập                                               |
+| --- | --------------------------------------------- | ----------------------------------------------------- |
+| 26  | Middleware (như Express middleware)           | Middleware log mỗi request                            |
+| 27  | Goroutine: chạy song song bằng chữ `go`       | Giả lập 100 người cùng bấm đặt vé                     |
+| 28  | `sync.Mutex` — **vấn đề đặt trùng ghế lần 1** | Thấy bug 2 người cùng đặt được 1 ghế → sửa bằng mutex |
+| 29  | Channel cơ bản                                | Hàng đợi gửi "email xác nhận" sau khi đặt vé          |
+| 30  | **Ôn tập**                                    | Seatly API + test bằng `httptest`                     |
 
-| Day | Chủ đề                                                                   | Lab → **Done khi**                                                        |
-| --- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| 16  | `net/http`, `ServeMux` pattern, JSON request/response                    | `GET/POST /events`, `GET /events/{id}` in-memory → **gọi được bằng curl** |
-| 17  | Middleware: logging, recover, request ID, CORS — tự viết, so với Express | 4 middleware chain → **panic trong handler trả 500, server không chết**   |
-| 18  | Validation, lỗi chuẩn RFC 9457 (`problem+json`), pagination cursor       | Mọi lỗi cùng 1 format → **test validation trả 422 đúng field**            |
-| 19  | Config từ env, server timeouts, graceful shutdown; khi nào cần chi/gin   | **Kill server khi đang có request chậm → request đó vẫn trả về đủ**       |
-| 20  | `httptest`, test handler; Postman collection                             | **Handler coverage ≥ 80%; `postman collection run` pass**                 |
+## Giai đoạn 3 — Database & Auth (Tuần 7–9)
 
-## Tuần 5 — PostgreSQL
+_roadmap.sh: Relational DB, Authentication, Web Security_
 
-_roadmap.sh: Relational DB, ORMs (pgx, sqlc, GORM)_
+### Tuần 7 — PostgreSQL
 
-| Day | Chủ đề                                                               | Lab → **Done khi**                                                       |
-| --- | -------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| 21  | Docker Compose Postgres, schema design, migration (`goose`)          | Bảng users/events/seats/bookings → **`goose up/down` chạy 2 chiều sạch** |
-| 22  | `database/sql` vs `pgx`, connection pool, query timeout qua context  | Repo pgx thay in-memory → **toàn bộ test Tuần 4 vẫn pass**               |
-| 23  | `sqlc` vs GORM — trade-off                                           | Chuyển query sang sqlc → **không còn SQL string trong Go code**          |
-| 24  | Transaction, isolation level, `SELECT … FOR UPDATE`, optimistic lock | Đặt ghế trong tx → **100 goroutine giành 1 ghế: đúng 1 thành công**      |
-| 25  | Index, `EXPLAIN ANALYZE`, N+1, keyset pagination                     | Seed 1M seats → **ghi lại query time trước/sau index**                   |
+| Day | Học gì                                     | Bài tập                                     |
+| --- | ------------------------------------------ | ------------------------------------------- |
+| 31  | Chạy Postgres bằng Docker, ôn SQL          | Thiết kế bảng `events`, `seats`, `bookings` |
+| 32  | Kết nối DB bằng `pgx`, query đơn giản      | `GET /events` đọc từ DB                     |
+| 33  | Insert / update                            | Tạo sự kiện + sinh ghế vào DB               |
+| 34  | Migration với `goose` (như Prisma migrate) | Thêm cột `price` cho ghế bằng migration     |
+| 35  | **Ôn tập**                                 | Seatly chạy hoàn toàn trên Postgres         |
 
-**Tự kiểm tra:** `FOR UPDATE` vs optimistic lock chọn khi nào? Pool size đặt bao nhiêu? sqlc hơn GORM ở đâu?
+### Tuần 8 — Cấu trúc project & transaction
 
-## Tuần 6 — Auth & Security
+| Day | Học gì                                                                              | Bài tập                                                      |
+| --- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| 36  | Config từ `.env`                                                                    | Đọc DB URL, port từ env                                      |
+| 37  | Chia layer: handler → service → repository                                          | Refactor Seatly                                              |
+| 38  | Validate input, format lỗi thống nhất                                               | Đặt ghế không tồn tại → 404, thiếu field → 400               |
+| 39  | Transaction — **vấn đề đặt trùng ghế lần 2** (mutex không đủ khi chạy nhiều server) | Đặt ghế trong transaction, 2 request cùng ghế → 1 thành công |
+| 40  | **Ôn tập**                                                                          | Phân trang `GET /events?page=2`                              |
 
-_roadmap.sh backend: Authentication, Web Security (OWASP)_
+### Tuần 9 — Đăng nhập
 
-| Day | Chủ đề                                                          | Lab → **Done khi**                                               |
-| --- | --------------------------------------------------------------- | ---------------------------------------------------------------- |
-| 26  | Hash password (argon2id/bcrypt), signup/login                   | **Password không bao giờ xuất hiện trong log/DB dạng thô**       |
-| 27  | JWT access + refresh token rotation; so với session cookie      | **Refresh token cũ dùng lại → bị từ chối và revoke cả họ token** |
-| 28  | RBAC: user / organizer / admin; authz ở service layer           | **User thường tạo event → 403**                                  |
-| 29  | OWASP API Top 10: IDOR, mass assignment, SQLi, security headers | **Test: user A xem booking của user B → 404**                    |
-| 30  | OAuth2 Google (`x/oauth2`), quản lý secret                      | **Login Google tạo user mới hoặc link user cũ theo email**       |
+| Day | Học gì                       | Bài tập                                             |
+| --- | ---------------------------- | --------------------------------------------------- |
+| 41  | Hash password với `bcrypt`   | `POST /signup`                                      |
+| 42  | JWT                          | `POST /login` trả token                             |
+| 43  | Middleware xác thực          | Phải đăng nhập mới đặt vé được                      |
+| 44  | Phân quyền: user / organizer | Chỉ organizer tạo sự kiện; user chỉ xem vé của mình |
+| 45  | **Ôn tập**                   | Postman: signup → login → đặt vé → xem vé của tôi   |
 
-## Tuần 7 — Cache, Background Job, Idempotency
+## Giai đoạn 4 — Đưa lên production (Tuần 10–11)
 
-_roadmap.sh backend: Caching, Message Brokers_
+_roadmap.sh: Testing, Logging, Containerization, CI/CD_
 
-| Day | Chủ đề                                                          | Lab → **Done khi**                                                          |
-| --- | --------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| 31  | Redis cache-aside, TTL, invalidation, stampede (`singleflight`) | Cache `GET /events/{id}` → **1000 request đồng thời khi miss = 1 query DB** |
-| 32  | Giữ ghế 10': Redis `SET NX EX` hoặc cột `held_until`            | **Hết hạn tự nhả ghế; người khác giữ được ngay**                            |
-| 33  | Idempotency-Key, webhook ký HMAC                                | Mock payment webhook gửi 2 lần → **chỉ 1 booking confirmed**                |
-| 34  | Job queue (`river` trên Postgres), retry, backoff, dead letter  | Email xác nhận qua Mailpit → **SMTP chết rồi sống lại, email vẫn tới**      |
-| 35  | Rate limit phân tán (Redis token bucket)                        | **Vượt quota → 429 + `Retry-After`**                                        |
+| Day | Học gì                                          | Bài tập                                 |
+| --- | ----------------------------------------------- | --------------------------------------- |
+| 46  | Table-driven test (cách viết test chuẩn của Go) | Test service đặt vé                     |
+| 47  | Test handler với `httptest`                     | Test API không cần chạy server          |
+| 48  | Log có cấu trúc với `log/slog`                  | Log JSON mỗi lượt đặt vé                |
+| 49  | Graceful shutdown                               | Tắt server không mất lượt đặt đang chạy |
+| 50  | **Ôn tập** + `golangci-lint`                    | Sửa hết cảnh báo lint                   |
+| 51  | Dockerfile                                      | Đóng gói Seatly thành image             |
+| 52  | Docker Compose: API + Postgres                  | `docker compose up` là chạy             |
+| 53  | GitHub Actions                                  | Tự chạy test mỗi lần push               |
+| 54  | Deploy (Render / Fly.io)                        | Có link API public                      |
+| 55  | **Ôn tập**                                      | README giới thiệu Seatly                |
 
-**Tự kiểm tra:** Cache invalidation khi update? Idempotency khác retry chỗ nào? At-least-once nghĩa là gì với handler?
+## Giai đoạn 5 — Nâng cao (khi đã vững, sẽ chi tiết sau)
 
-## Tuần 8 — Kiến trúc & Testing thật
-
-_roadmap.sh: Design Patterns, Testing_
-
-| Day | Chủ đề                                                                         | Lab → **Done khi**                                                        |
-| --- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| 36  | handler → service → repo; DI qua constructor; interface khai báo phía consumer | Refactor Seatly → **không còn interface nào chỉ có 1 impl mà không test** |
-| 37  | Integration test với `testcontainers-go`                                       | **`go test ./...` tự dựng Postgres + Redis thật**                         |
-| 38  | Fake viết tay vs mock generate; test service layer                             | **Service test chạy < 1s, không cần Docker**                              |
-| 39  | OpenAPI spec (viết spec trước hoặc `oapi-codegen`)                             | **Spec khớp API; Postman import spec chạy pass**                          |
-| 40  | `golangci-lint` strict, code review checklist                                  | **0 lint warning; tự review 1 PR theo checklist**                         |
-
-## Tuần 9 — Observability & Performance
-
-_roadmap.sh backend: Observability, Scaling_
-
-| Day | Chủ đề                                             | Lab → **Done khi**                                   |
-| --- | -------------------------------------------------- | ---------------------------------------------------- |
-| 41  | `slog` JSON, correlation ID xuyên request          | **grep 1 request ID ra toàn bộ log của request đó**  |
-| 42  | Prometheus metrics (RED), Grafana                  | **Dashboard: rate, error %, p95 latency theo route** |
-| 43  | OpenTelemetry tracing HTTP → DB → Redis, Jaeger    | **Thấy 1 trace đặt vé với span DB + Redis**          |
-| 44  | `pprof` CPU/heap, escape analysis, giảm allocation | **Giảm alloc/op ở 1 hot path, có số trước/sau**      |
-| 45  | Load test k6: 1000 VU giành ghế                    | **p95 < 200ms, 0 oversell**                          |
-
-## Tuần 10 — Messaging, Microservices, Realtime
-
-_roadmap.sh: Microservices (gRPC, protobuf), Message Brokers, Real-time_
-
-| Day | Chủ đề                                             | Lab → **Done khi**                                                      |
-| --- | -------------------------------------------------- | ----------------------------------------------------------------------- |
-| 46  | NATS JetStream / RabbitMQ / Kafka — khác nhau gì   | Publish `booking.confirmed` → **consumer chết rồi lên lại vẫn nhận đủ** |
-| 47  | Transactional outbox                               | **Kill process giữa commit và publish → event không mất**               |
-| 48  | Tách notification service; gRPC + protobuf (`buf`) | **Seatly gọi notification qua gRPC, có deadline**                       |
-| 49  | Timeout, retry + jitter, circuit breaker           | **Notification chết → Seatly vẫn đặt vé được**                          |
-| 50  | WebSocket / SSE sơ đồ ghế realtime                 | **2 tab: tab A giữ ghế, tab B thấy ghế khóa < 1s**                      |
-
-## Tuần 11 — Ship
-
-_roadmap.sh backend: Containerization, CI/CD_
-
-| Day | Chủ đề                                                        | Lab → **Done khi**                               |
-| --- | ------------------------------------------------------------- | ------------------------------------------------ |
-| 51  | Dockerfile multi-stage, distroless                            | **Image < 25MB, chạy non-root**                  |
-| 52  | GitHub Actions: lint, `test -race`, build image               | **PR đỏ khi test fail**                          |
-| 53  | Deploy (Fly.io / VPS), migration khi deploy, health/readiness | **Có URL public; deploy mới không downtime**     |
-| 54  | `govulncheck`, secret scanning, dependency update             | **0 vuln known**                                 |
-| 55  | README kiến trúc + diagram + ADR; mock interview              | **Giải thích được mọi quyết định trong 15 phút** |
+Giữ ghế 10 phút rồi tự nhả (Redis) · thanh toán + webhook không bị trừ tiền 2 lần (idempotency) · gửi email bằng background job · rate limit · sơ đồ ghế realtime (WebSocket) · load test 1000 người cùng giành vé · `pprof` · gRPC.
 
 ---
 
-## Tài liệu chính
+## Tài liệu (đọc kèm, không bắt buộc)
 
-- [Tour of Go](https://go.dev/tour) · [Go by Example](https://gobyexample.com) · [Effective Go](https://go.dev/doc/effective_go)
-- [Learn Go with Tests](https://quii.gitbook.io/learn-go-with-tests) — tuần 1–4
-- Sách: _Let's Go_ / _Let's Go Further_ (Alex Edwards) — tuần 4–9; _Concurrency in Go_ (Katherine Cox-Buday) — tuần 3
-- [Go Code Review Comments](https://go.dev/wiki/CodeReviewComments) · [100 Go Mistakes](https://100go.co)
+- [Tour of Go](https://go.dev/tour) — tương tác ngay trên web, rất hợp người mới
+- [Go by Example](https://gobyexample.com) — mỗi trang 1 ví dụ ngắn, dùng để tra cứu
+- [Learn Go with Tests](https://quii.gitbook.io/learn-go-with-tests) — từ Tuần 4

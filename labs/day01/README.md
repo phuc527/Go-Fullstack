@@ -1,56 +1,100 @@
-# Day 1 — Toolchain, string/rune, slice, map
+# Day 1 — Chương trình Go đầu tiên
 
-## Đọc (30')
+Hôm nay chỉ học 1 việc: **viết và chạy chương trình in chữ ra màn hình**. Mất khoảng 45 phút.
 
-- [Tour of Go: Basics](https://go.dev/tour/basics/1) (lướt nhanh) → [More types](https://go.dev/tour/moretypes/1) (đọc kỹ slice/map)
-- [Strings, bytes, runes and characters in Go](https://go.dev/blog/strings) — **quan trọng nhất hôm nay**
-- [Go Slices: usage and internals](https://go.dev/blog/slices-intro)
+## 1. Chuẩn bị (10')
 
-## Khác Node chỗ nào
+1. Mở terminal, gõ `go version`. Thấy `go version go1.27...` là đã cài xong.
+2. VS Code: cài extension **Go** (tác giả: Go Team at Google).
+3. Mở [main.go](main.go). Nếu VS Code hỏi cài thêm tools → bấm **Install All**.
 
-| Node                        | Go                                                                   |
-| --------------------------- | -------------------------------------------------------------------- |
-| string = UTF-16, `s.length` | string = **bytes UTF-8**, `len(s)` = số byte (`len("ệ") == 3`)       |
-| `[...s].reverse().join("")` | `[]rune(s)` → đảo → `string(r)`                                      |
-| `s[i]` = ký tự              | `s[i]` = **byte**; `for _, r := range s` mới lặp theo rune           |
-| `{}` / `Map`                | `map[string]int` — key thiếu trả **zero value** (`m["x"]++` chạy ok) |
-| Array JS                    | slice `[]T` (view lên array có `len`/`cap`)                          |
-| `undefined`                 | zero value: `0`, `""`, `nil`, `false`                                |
-| `node index.js`             | `go run .` · `go build` → 1 binary, không cần runtime                |
+## 2. Đọc hiểu file main.go (10')
 
-## Lab
+```go
+package main          // file này thuộc chương trình chạy được (giống "entry point")
 
-Code trong [text.go](text.go) đang `panic("TODO")`. Làm cho test xanh:
+import "fmt"          // giống: import fmt from "fmt" — fmt dùng để in ra màn hình
+
+func main() {         // hàm main tự chạy khi chạy chương trình
+	fmt.Println("🎫 Chào mừng đến Seatly!")   // giống console.log(...)
+}
+```
+
+| JavaScript                     | Go                                             |
+| ------------------------------ | ---------------------------------------------- |
+| `console.log("hi")`            | `fmt.Println("hi")`                            |
+| ``console.log(`Giá: ${gia}`)`` | `fmt.Printf("Giá: %d\n", gia)`                 |
+| `node index.js`                | `go run ./labs/day01`                          |
+| Không cần hàm main             | **Bắt buộc** có `package main` + `func main()` |
+| Dấu `;` tùy ý                  | Không cần `;`                                  |
+
+**Chạy thử** (ở thư mục gốc repo):
 
 ```bash
-go test ./labs/day01/ -v
+go run ./labs/day01
 ```
 
-1. **`Reverse`** — thử bản sai trước (đảo theo byte `s[i]`) để thấy `"Việt"` vỡ ra ký tự rác, rồi sửa bằng `[]rune`.
-2. **`WordFreq`** — `strings.FieldsFunc` + `unicode`. Nhớ trả map rỗng (không phải `nil`) với input rỗng? Test dùng `maps.Equal`, thử xem `nil` có pass không và vì sao.
-3. **`TopN`** — map trong Go **lặp ngẫu nhiên thứ tự**, nên phải sort. Dùng `slices.SortFunc` + `cmp.Compare` (gợi ý: `cmp.Or` để sort 2 tiêu chí).
-4. **CLI** [cmd/topwords/main.go](cmd/topwords/main.go) — làm theo TODO, rồi:
+Thấy `🎫 Chào mừng đến Seatly!` là thành công.
 
-```bash
-go run ./labs/day01/cmd/topwords -n 5 < ROADMAP.md
+## 3. Bài tập (20')
+
+Làm trong [main.go](main.go), chỗ có `TODO`. Sau mỗi bài chạy lại `go run ./labs/day01`.
+
+**Bài 2** — In thêm 1 dòng: `Sự kiện: Đêm nhạc Mùa Thu`
+
+**Bài 3** — Dùng `fmt.Printf` in ra: `Ghế: A12 | Giá: 500000 đ`
+
+> `Printf` giống template string: `%s` = chỗ điền chữ, `%d` = chỗ điền số nguyên, `\n` = xuống dòng.
+> Ví dụ: `fmt.Printf("Xin chào %s, bạn %d tuổi\n", "Phúc", 30)`
+
+**Bài 4** — Tạo 3 biến `suKien`, `ghe`, `gia`, rồi dùng chúng in ra: `Đêm nhạc Mùa Thu - Ghế A12 - 500000 đ`
+
+```go
+suKien := "Đêm nhạc Mùa Thu"   // := là khai báo biến, giống let trong JS
 ```
 
-5. **Cross-compile** (PowerShell):
+### Kết quả mong đợi
 
-```powershell
-$env:GOOS="linux"; go build -o topwords ./labs/day01/cmd/topwords; Remove-Item Env:GOOS
+```
+🎫 Chào mừng đến Seatly!
+Sự kiện: Đêm nhạc Mùa Thu
+Ghế: A12 | Giá: 500000 đ
+Đêm nhạc Mùa Thu - Ghế A12 - 500000 đ
 ```
 
-## Done khi
+<details>
+<summary>Đáp án (chỉ mở khi bí quá 20 phút)</summary>
 
-- [ ] `go test ./labs/day01/` xanh
-- [ ] `go vet ./...` không báo gì
-- [ ] CLI in đúng top N từ ROADMAP.md
-- [ ] Build ra binary Linux từ Windows (đừng commit binary)
+```go
+package main
 
-## Tự kiểm tra
+import "fmt"
 
-1. `len("Việt")` bằng mấy? Vì sao?
-2. `for i, r := range s` — `i` tăng 1 mỗi vòng không?
-3. Ghi vào `nil` map thì sao? Đọc từ `nil` map thì sao?
-4. Vì sao Go cố tình random thứ tự lặp map?
+func main() {
+	fmt.Println("🎫 Chào mừng đến Seatly!")
+
+	fmt.Println("Sự kiện: Đêm nhạc Mùa Thu")
+
+	fmt.Printf("Ghế: %s | Giá: %d đ\n", "A12", 500000)
+
+	suKien := "Đêm nhạc Mùa Thu"
+	ghe := "A12"
+	gia := 500000
+	fmt.Printf("%s - Ghế %s - %d đ\n", suKien, ghe, gia)
+}
+```
+
+</details>
+
+## 4. Thử phá code (5') — để quen thông báo lỗi
+
+Mỗi lần thử 1 cái, chạy xem lỗi gì, rồi sửa lại:
+
+1. Xóa dòng `import "fmt"` → lỗi `undefined: fmt`
+2. Tạo biến `x := 1` nhưng không dùng → lỗi `declared and not used` (Go **bắt buộc** dùng mọi biến đã tạo)
+3. Đổi `Println` thành `println` (chữ thường) → vẫn chạy nhưng đừng dùng, luôn dùng `fmt.Println`
+
+## Xong Day 1 khi
+
+- [ ] Chạy ra đúng 4 dòng như "Kết quả mong đợi"
+- [ ] Hiểu `Println` khác `Printf` chỗ nào
