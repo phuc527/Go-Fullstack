@@ -54,12 +54,20 @@ func main() {
 	// TODO Bước 2: nhập lựa chọn (1-3), sai thì báo lỗi và dừng
 	var luaChon int
 	fmt.Print("Nhập lựa chọn (1-3): ")
-	fmt.Scanf("%d", &luaChon)
+	_, err := fmt.Scan(&luaChon)
+	if err != nil {
+		fmt.Println("❌ Lựa chọn không hợp lệ")
+		return
+	}
 
 	// TODO Bước 3: nhập số vé, kiểm tra hợp lệ
 	var soVe int
 	fmt.Print("Nhập số vé: ")
-	fmt.Scanf("%d", &soVe)
+	_, err = fmt.Scan(&soVe)
+	if err != nil {
+		fmt.Println("❌ Vui lòng nhập một con số")
+		return
+	}
 
 	isValid, message := kiemTraSoVe(soVe)
 	if !isValid {
