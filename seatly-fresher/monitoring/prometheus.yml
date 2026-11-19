@@ -1,0 +1,8 @@
+# Prometheus cứ 5s gọi GET backend:8080/metrics để kéo số liệu về và lưu theo thời gian.
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: seatly-backend
+    static_configs:
+      - targets: ["backend:8080"]

@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Đặt ghế: POST /api/bookings (201 rồi 409)",
+    "locale": "vi",
+    "output": "seatly-fresher/docs/booking-sequence.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    { "id": "user", "type": "external", "label": "Người dùng", "sublabel": "trình duyệt" },
+    { "id": "ui", "type": "frontend", "label": "React app", "sublabel": "React Query" },
+    { "id": "nginx", "type": "frontend", "label": "nginx", "sublabel": "container frontend" },
+    { "id": "handler", "type": "backend", "label": "httpapi", "sublabel": "seatHandler.book" },
+    { "id": "service", "type": "backend", "label": "service", "sublabel": "BookingService" },
+    { "id": "repo", "type": "database", "label": "repository", "sublabel": "memory + mutex" }
+  ],
+  "segments": [
+    { "from": 150, "to": 540, "label": "Lần 1: ghế A1 còn trống → 201" },
+    { "from": 556, "to": 840, "label": "Lần 2: A1 đã có người đặt → 409" }
+  ],
+  "messages": [
+    { "id": "pick", "from": "user", "to": "ui", "y": 165, "label": "chọn A1, bấm Đặt ghế" },
+    { "id": "post1", "from": "ui", "to": "nginx", "y": 193, "label": "POST /api/bookings", "variant": "emphasis" },
+    { "id": "proxy1", "from": "nginx", "to": "handler", "y": 221, "label": "proxy_pass", "variant": "emphasis", "note": "middleware log → metrics → recover; body sai → 400" },
+    { "id": "svc1", "from": "handler", "to": "service", "y": 280, "label": "BookSeat(\"A1\")", "variant": "emphasis", "note": "chuẩn hóa ID; rỗng → ErrInvalidSeatID" },
+    { "id": "repo1", "from": "service", "to": "repo", "y": 339, "label": "Book(\"A1\")", "variant": "emphasis", "note": "khóa mutex: kiểm tra + đánh dấu cùng 1 lần" },
+    { "id": "seat1", "from": "repo", "to": "service", "y": 398, "label": "Seat{booked:true}", "variant": "return" },
+    { "id": "back1", "from": "service", "to": "handler", "y": 426, "label": "seat, nil", "variant": "return" },
+    { "id": "res1", "from": "handler", "to": "nginx", "y": 454, "label": "201 {success:true}", "variant": "return", "note": "bookings_total{result=booked} +1" },
+    { "id": "fwd1", "from": "nginx", "to": "ui", "y": 500, "label": "201", "variant": "return" },
+    { "id": "ok1", "from": "ui", "to": "user", "y": 528, "label": "Đã đặt A1 + tải lại sơ đồ", "variant": "return" },
+
+    { "id": "post2", "from": "ui", "to": "nginx", "y": 575, "label": "POST A1 (người thứ 2)", "variant": "emphasis" },
+    { "id": "proxy2", "from": "nginx", "to": "handler", "y": 603, "label": "proxy_pass", "variant": "emphasis" },
+    { "id": "svc2", "from": "handler", "to": "service", "y": 631, "label": "BookSeat(\"A1\")", "variant": "emphasis" },
+    { "id": "repo2", "from": "service", "to": "repo", "y": 659, "label": "Book(\"A1\")", "variant": "emphasis" },
+    { "id": "err2", "from": "repo", "to": "service", "y": 687, "label": "ErrSeatAlreadyBooked", "variant": "return" },
+    { "id": "back2", "from": "service", "to": "handler", "y": 715, "label": "err", "variant": "return" },
+    { "id": "res2", "from": "handler", "to": "nginx", "y": 743, "label": "409 {success:false}", "variant": "return", "note": "errors.Is → 409; result=conflict +1" },
+    { "id": "fwd2", "from": "nginx", "to": "ui", "y": 798, "label": "409", "variant": "return" },
+    { "id": "msg2", "from": "ui", "to": "user", "y": 826, "label": "hiện message lỗi", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "ui", "from": 188, "to": 532, "type": "frontend" },
+    { "participant": "nginx", "from": 193, "to": 504, "type": "frontend" },
+    { "participant": "handler", "from": 221, "to": 458, "type": "backend" },
+    { "participant": "service", "from": 280, "to": 430, "type": "backend" },
+    { "participant": "repo", "from": 339, "to": 402, "type": "database" },
+    { "participant": "ui", "from": 570, "to": 830, "type": "frontend" },
+    { "participant": "nginx", "from": 575, "to": 802, "type": "frontend" },
+    { "participant": "handler", "from": 603, "to": 747, "type": "backend" },
+    { "participant": "service", "from": 631, "to": 719, "type": "backend" },
+    { "participant": "repo", "from": 659, "to": 691, "type": "database" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Đường đi chính",
+      "items": [
+        "Mỗi layer chỉ gọi layer ngay dưới nó",
+        "Kết quả đi ngược lên theo đúng đường đã đến"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Vì sao không đặt trùng được",
+      "items": [
+        "repository kiểm tra 'còn trống?' và ghi 'đã đặt' trong CÙNG 1 lần khóa mutex",
+        "100 request cùng lúc thì chỉ 1 request thắng (có test -race)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Lỗi đi qua các layer",
+      "items": [
+        "repository trả lỗi nghiệp vụ (domain.ErrSeatAlreadyBooked)",
+        "Chỉ handler đổi lỗi thành HTTP status, service không biết HTTP"
+      ]
+    }
+  ]
+}

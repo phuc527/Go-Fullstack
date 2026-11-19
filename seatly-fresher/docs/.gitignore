@@ -1,0 +1,5 @@
+# biên nhận do archify tự sinh khi finalize
+*.finalize.json
+*.finalize-summary.json
+*.delivery.json
+*.browser-check.json

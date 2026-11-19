@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Kiến trúc Seatly Fresher (Docker Compose)",
+    "locale": "vi",
+    "output": "seatly-fresher/docs/architecture.html",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    { "id": "user", "type": "external", "label": "Người dùng", "sublabel": "trình duyệt", "pos": [40, 60], "size": [130, 62] },
+    { "id": "frontend", "type": "frontend", "label": "frontend", "sublabel": "nginx :3000 · React build", "pos": [270, 60], "size": [150, 62] },
+    { "id": "handler", "type": "backend", "label": "httpapi", "sublabel": "router · handler · middleware", "pos": [530, 60], "size": [170, 62] },
+    { "id": "service", "type": "backend", "label": "service", "sublabel": "BookingService · luật", "pos": [790, 60], "size": [150, 62] },
+    { "id": "repo", "type": "database", "label": "repository/memory", "sublabel": "ghế trong RAM + mutex", "pos": [1010, 60], "size": [160, 62] },
+    { "id": "prometheus", "type": "cloud", "label": "Prometheus", "sublabel": ":9090 · lưu số liệu", "pos": [530, 260], "size": [170, 62] },
+    { "id": "grafana", "type": "frontend", "label": "Grafana", "sublabel": ":3001 · dashboard", "pos": [270, 260], "size": [150, 62] },
+    { "id": "dev", "type": "external", "label": "Dev / SRE", "sublabel": "theo dõi hệ thống", "pos": [40, 260], "size": [130, 62] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "docker compose", "wraps": ["frontend", "handler", "service", "repo", "prometheus", "grafana"], "pad": 26 },
+    { "kind": "security-group", "label": "container backend :8080 (user nobody)", "wraps": ["handler", "service", "repo"], "pad": 14 }
+  ],
+  "connections": [
+    { "from": "user", "to": "frontend", "label": "HTTP", "variant": "emphasis" },
+    { "from": "frontend", "to": "handler", "label": "proxy /api/*", "variant": "emphasis" },
+    { "from": "handler", "to": "service", "label": "BookSeat()", "variant": "emphasis" },
+    { "from": "service", "to": "repo", "label": "Book()", "variant": "emphasis" },
+    { "from": "prometheus", "to": "handler", "label": "scrape /metrics 5s", "variant": "dashed" },
+    { "from": "grafana", "to": "prometheus", "label": "PromQL" },
+    { "from": "dev", "to": "grafana", "label": "xem" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "3 layer trong backend",
+      "items": [
+        "httpapi: chỉ lo HTTP (đọc JSON, đổi lỗi → status 400/404/409)",
+        "service: luật nghiệp vụ, không biết HTTP hay DB",
+        "repository: lưu trữ; service gọi qua interface nên đổi sang Postgres không phải sửa service"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Monitoring",
+      "items": [
+        "Prometheus tự KÉO số liệu từ /metrics, backend không đẩy đi",
+        "Grafana chỉ đọc Prometheus bằng PromQL rồi vẽ biểu đồ",
+        "nginx chỉ chuyển /api nên người dùng ngoài không thấy /metrics"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Khởi động",
+      "items": [
+        "frontend chờ backend trả /healthz OK mới chạy",
+        "docker stop → backend graceful shutdown, chờ request đang chạy xong",
+        "Dữ liệu ghế nằm trong RAM: tắt backend là mất (Postgres ở level L5)"
+      ]
+    }
+  ]
+}

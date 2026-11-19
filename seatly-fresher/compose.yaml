@@ -1,14 +1,50 @@
-# Chạy cả BE + FE: docker compose up --build
-# Mở http://localhost:3000
+# Chạy tất cả: docker compose up --build
+#   App:        http://localhost:3000
+#   API:        http://localhost:8080/api/seats
+#   Prometheus: http://localhost:9090
+#   Grafana:    http://localhost:3001  (dashboard "Seatly Backend")
 services:
-  be:
-    build: ./be
+  backend:
+    build: ./backend
+    environment:
+      PORT: "8080"
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
 
-  fe:
-    build: ./fe
+  frontend:
+    build: ./frontend
     ports:
       - "3000:80"
     depends_on:
-      - be
+      backend:
+        condition: service_healthy # chờ backend trả /healthz OK rồi mới chạy FE
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:12.1.0
+    environment:
+      # Chỉ cho máy local: vào xem không cần đăng nhập. Production phải tắt.
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/seatly.json
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
