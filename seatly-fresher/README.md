@@ -53,17 +53,17 @@ docker compose down           # tắt
 
 Sửa code xong thì chạy lại `docker compose up --build`.
 
-| Service | Image                                           | Port                        |
-| ------- | ----------------------------------------------- | --------------------------- |
-| `be`    | Go build ra 1 file binary, chạy trên Alpine     | `8080`                      |
-| `fe`    | Build React ra file tĩnh, nginx phục vụ         | `3000` → `/api` chuyển sang `be` |
+| Service | Image                                       | Port                             |
+| ------- | ------------------------------------------- | -------------------------------- |
+| `be`    | Go build ra 1 file binary, chạy trên Alpine | `8080`                           |
+| `fe`    | Build React ra file tĩnh, nginx phục vụ     | `3000` → `/api` chuyển sang `be` |
 
 ## API
 
-| Method | URL             | Body                 | Kết quả                                                  |
-| ------ | --------------- | -------------------- | -------------------------------------------------------- |
-| GET    | `/api/seats`    |                      | `200` danh sách ghế                                      |
-| POST   | `/api/bookings` | `{"seatId": "A1"}`   | `201` đặt được · `404` ghế không có · `409` đã có người đặt · `400` body sai |
+| Method | URL             | Body               | Kết quả                                                                      |
+| ------ | --------------- | ------------------ | ---------------------------------------------------------------------------- |
+| GET    | `/api/seats`    |                    | `200` danh sách ghế                                                          |
+| POST   | `/api/bookings` | `{"seatId": "A1"}` | `201` đặt được · `404` ghế không có · `409` đã có người đặt · `400` body sai |
 
 Thử bằng curl (Git Bash):
 
@@ -77,41 +77,43 @@ curl -X POST localhost:8080/api/bookings -d '{"seatId":"A1"}'   # lần 2 → 40
 
 ```bash
 cd seatly-fresher/be
-go test -v .
+go test -race -v .
 ```
+
+`-race` bật **race detector**: Go theo dõi xem có 2 goroutine nào đọc/ghi cùng 1 dữ liệu mà không khóa hay không. Trên Windows, cờ này cần `gcc` (đã cài qua WinLibs).
 
 Có 2 test:
 
 - Đặt A1 → 201, đặt lại → 409, Z9 → 404, body sai → 400.
-- **100 người cùng lúc giành ghế B1 → chỉ đúng 1 người được.** Thử xóa 2 dòng `mu.Lock()` / `defer mu.Unlock()` trong `createBooking` rồi chạy lại test. Thường bạn sẽ thấy test fail. Đây chính là bài toán "đặt trùng ghế" sẽ học ở Day 28.
+- **100 người cùng lúc giành ghế B1 → chỉ đúng 1 người được.** Thử xóa 2 dòng `mu.Lock()` / `defer mu.Unlock()` trong `createBooking` rồi chạy lại `go test -race -v .`. Bạn sẽ thấy `WARNING: DATA RACE` và test fail. Đây chính là bài toán "đặt trùng ghế" sẽ học ở Day 28.
 
 ## Đọc code BE: những thứ chưa học
 
 `be/main.go` có dùng vài thứ chưa học tới. Đọc chú thích trong code là đủ hiểu để chạy, còn học kỹ thì theo ngày dưới đây:
 
-| Trong code                              | Là gì                                        | Học kỹ ở  |
-| --------------------------------------- | -------------------------------------------- | --------- |
-| `type Seat struct {...}`                | Giống TS `type Seat = {...}`                 | Day 11    |
-| `` `json:"id"` ``                       | Tên field khi đổi sang JSON                  | Day 17    |
-| `if err := ...; err != nil`             | Xử lý lỗi                                    | Day 13    |
-| `func(w http.ResponseWriter, r *http.Request)` | Handler, giống `(req, res) => {}` của Express | Day 21 |
-| `mux.HandleFunc("GET /api/seats", ...)` | Giống `app.get("/api/seats", ...)`           | Day 21    |
-| `sync.Mutex`, `mu.Lock()`               | Khóa để 2 request không sửa cùng lúc         | Day 28    |
-| `defer`                                 | Chạy khi hàm kết thúc, giống `finally`       | Day 28    |
+| Trong code                                     | Là gì                                         | Học kỹ ở |
+| ---------------------------------------------- | --------------------------------------------- | -------- |
+| `type Seat struct {...}`                       | Giống TS `type Seat = {...}`                  | Day 11   |
+| `` `json:"id"` ``                              | Tên field khi đổi sang JSON                   | Day 17   |
+| `if err := ...; err != nil`                    | Xử lý lỗi                                     | Day 13   |
+| `func(w http.ResponseWriter, r *http.Request)` | Handler, giống `(req, res) => {}` của Express | Day 21   |
+| `mux.HandleFunc("GET /api/seats", ...)`        | Giống `app.get("/api/seats", ...)`            | Day 21   |
+| `sync.Mutex`, `mu.Lock()`                      | Khóa để 2 request không sửa cùng lúc          | Day 28   |
+| `defer`                                        | Chạy khi hàm kết thúc, giống `finally`        | Day 28   |
 
 ## Lộ trình nâng cấp
 
 Mỗi bước gắn với các ngày trong [ROADMAP.md](../ROADMAP.md). Học tới đâu thì nâng cấp tới đó.
 
-| Phiên bản  | Sau khi học | Nâng cấp                                                                     |
-| ---------- | ----------- | ---------------------------------------------------------------------------- |
-| **v0** ✅  | Day 10      | Bản hiện tại: 1 sự kiện, đặt ghế, lưu trong RAM                              |
-| v1         | Day 11–14   | Tách code vào package `booking`: `Event` có method `Book(seatID) error`      |
-| v2         | Day 17–18   | Lưu dữ liệu ra file JSON → tắt BE không mất ghế đã đặt                       |
-| v3         | Day 19–20   | Test viết theo kiểu table-driven                                             |
-| v4         | Day 21–25   | Nhiều sự kiện: `GET /api/events`, `GET /api/events/{id}/seats`; FE có trang chọn sự kiện |
-| v5         | Day 26–30   | Middleware ghi log và bắt panic; hiểu thật kỹ mutex                          |
-| v6         | Day 31–35   | Thêm PostgreSQL vào `compose.yaml`, BE đọc/ghi DB                            |
-| v7         | Day 36–40   | Chia layer handler → service → repo; đặt ghế bằng transaction                |
-| v8         | Day 41–45   | Đăng ký/đăng nhập JWT, "vé của tôi"; FE có trang login                       |
-| v9         | Day 46–55   | Log có cấu trúc, CI chạy test, deploy lên internet                           |
+| Phiên bản | Sau khi học | Nâng cấp                                                                                 |
+| --------- | ----------- | ---------------------------------------------------------------------------------------- |
+| **v0** ✅ | Day 10      | Bản hiện tại: 1 sự kiện, đặt ghế, lưu trong RAM                                          |
+| v1        | Day 11–14   | Tách code vào package `booking`: `Event` có method `Book(seatID) error`                  |
+| v2        | Day 17–18   | Lưu dữ liệu ra file JSON → tắt BE không mất ghế đã đặt                                   |
+| v3        | Day 19–20   | Test viết theo kiểu table-driven                                                         |
+| v4        | Day 21–25   | Nhiều sự kiện: `GET /api/events`, `GET /api/events/{id}/seats`; FE có trang chọn sự kiện |
+| v5        | Day 26–30   | Middleware ghi log và bắt panic; hiểu thật kỹ mutex                                      |
+| v6        | Day 31–35   | Thêm PostgreSQL vào `compose.yaml`, BE đọc/ghi DB                                        |
+| v7        | Day 36–40   | Chia layer handler → service → repo; đặt ghế bằng transaction                            |
+| v8        | Day 41–45   | Đăng ký/đăng nhập JWT, "vé của tôi"; FE có trang login                                   |
+| v9        | Day 46–55   | Log có cấu trúc, CI chạy test, deploy lên internet                                       |

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// Chạy: go test -v .   (Test sẽ học kỹ ở Day 19)
+// Chạy: go test -race -v .   (Test sẽ học kỹ ở Day 19)
 func TestBooking(t *testing.T) {
 	seats = newSeats()
 	mux := newMux()
