@@ -1,0 +1,8 @@
+# Grafana tự nạp mọi file dashboard .json trong /var/lib/grafana/dashboards.
+apiVersion: 1
+providers:
+  - name: bankly
+    folder: Bankly
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

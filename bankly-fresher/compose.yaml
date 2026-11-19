@@ -1,0 +1,76 @@
+# Chạy tất cả: docker compose up --build -d
+#   App:        http://localhost:3100
+#   API:        http://localhost:8090/api/accounts
+#   Prometheus: http://localhost:9091
+#   Grafana:    http://localhost:3101  (dashboard "Bankly Backend")
+#   Postgres:   localhost:5433  (user/pass/db: bankly)
+# Cổng khác Seatly (3000/8080/9090/3001) nên chạy song song 2 project được.
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: bankly
+      POSTGRES_PASSWORD: bankly # chỉ cho máy local
+      POSTGRES_DB: bankly
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql # dữ liệu sống sót qua `docker compose down` (mất khi thêm -v)
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro # tạo thêm DB bankly_test
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "bankly"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      PORT: "8090"
+      DATABASE_URL: postgres://bankly:bankly@postgres:5432/bankly?sslmode=disable
+    ports:
+      - "8090:8090"
+    depends_on:
+      postgres:
+        condition: service_healthy # chờ Postgres sẵn sàng rồi mới chạy BE
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8090/healthz"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3100:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9091:9090"
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:12.1.0
+    environment:
+      # Chỉ cho máy local: vào xem không cần đăng nhập. Production phải tắt.
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/bankly.json
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3101:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  pgdata:
